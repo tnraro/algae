@@ -14,6 +14,7 @@ func SetupRouter() *gin.Engine {
 	postAlgae(r)
 	deleteAlga(r)
 	patchAlga(r)
+	postLogin(r)
 	return r
 }
 
@@ -71,6 +72,27 @@ func patchAlga(r *gin.Engine) *gin.Engine {
 		if err != nil {
 			c.JSON(err.Code, gin.H{"error": err.Error()})
 			return
+		}
+		c.JSON(200, gin.H{"logs": result})
+	})
+	return r
+}
+
+func postLogin(r *gin.Engine) *gin.Engine {
+	r.POST("/login", func(c *gin.Context) {
+		type Body struct {
+			Registry string `json:"registry" binding:"required"`
+			Username string `json:"username" binding:"required"`
+			Secret   string `json:"secret" binding:"required"`
+		}
+		var body Body
+		if err := c.ShouldBindJSON(&body); err != nil {
+			c.JSON(400, gin.H{"error": "Invalid request body"})
+			return
+		}
+		result, err := alga.Login(body.Registry, body.Username, body.Secret)
+		if err != nil {
+			c.JSON(err.Code, gin.H{"error": err.Error()})
 		}
 		c.JSON(200, gin.H{"logs": result})
 	})

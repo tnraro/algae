@@ -206,6 +206,26 @@ func clear(name string) *AlgaError {
 	return nil
 }
 
+func Login(registry string, username string, password string) (string, *AlgaError) {
+	cmd := exec.Command("docker", "login", registry, "-u", username, "-p", password)
+	result, err := cmd.Output()
+
+	if err != nil {
+		switch e := err.(type) {
+		case *exec.Error:
+			fmt.Println("failed executing:", err)
+			return "", Error(500, err.Error())
+		case *exec.ExitError:
+			fmt.Println("exit:", e.ExitCode(), string(e.Stderr))
+			return "", Error(500, string(e.Stderr))
+		default:
+			fmt.Println("unexpected error:", err)
+			return "", Error(500, err.Error())
+		}
+	}
+	return string(result), nil
+}
+
 var (
 	nameRe      *regexp.Regexp
 	nameReError error
