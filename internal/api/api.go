@@ -15,6 +15,7 @@ func SetupRouter() *gin.Engine {
 	deleteAlga(r)
 	patchAlga(r)
 	postLogin(r)
+	getAlga(r)
 	return r
 }
 
@@ -75,6 +76,25 @@ func patchAlga(r *gin.Engine) *gin.Engine {
 		}
 		c.JSON(200, gin.H{"logs": result})
 	})
+	return r
+}
+
+func getAlga(r *gin.Engine) *gin.Engine {
+	r.GET("/algae/:name/", func(c *gin.Context) {
+		name := c.Param("name")
+
+		result, err := alga.GetAlga(name)
+		if err != nil {
+			c.JSON(err.Code, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{
+			"name":    result.Name,
+			"compose": result.Compose,
+			"env":     result.Env,
+		})
+	})
+
 	return r
 }
 

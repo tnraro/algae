@@ -42,6 +42,34 @@ func CreateAlga(name string, compose string, env string) (string, *AlgaError) {
 	}
 	return log0 + log1, nil
 }
+
+type getAlga struct {
+	Name    string
+	Compose string
+	Env     string
+}
+
+func GetAlga(name string) (*getAlga, *AlgaError) {
+	if !CheckName(name) {
+		return nil, Errorf(400, `The alga name "%s" does not match the pattern`, name)
+	}
+	if !hasAlga(name) {
+		return nil, Errorf(404, "The alga \"%s\" not exists", name)
+	}
+	compose, err0 := read(name, "compose.yml")
+	if err0 != nil {
+		return nil, Errorf(500, `compose.yml not exists`)
+	}
+	env, err1 := read(name, ".env")
+	if err1 != nil {
+		return nil, Errorf(500, ".env not exists")
+	}
+	return &getAlga{
+		Name:    name,
+		Compose: compose,
+		Env:     env,
+	}, nil
+}
 func DeleteAlga(name string) (string, *AlgaError) {
 	if !CheckName(name) {
 		return "", Errorf(400, `The alga name "%s" does not match the pattern`, name)
