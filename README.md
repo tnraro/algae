@@ -17,7 +17,7 @@ Delete alga:
 To start Algae:
 
 ```sh
-docker run --rm -p 41943:41943 -v /var/run/docker.sock:/var/run/docker.sock -v ./data:/app/data tnraro/algae:latest
+docker run --rm -p 41943:41943 -v /var/run/docker.sock:/var/run/docker.sock -v ./data:/app/data ghcr.io/tnraro/algae:main
 ```
 
 [compose.yml example](compose.yml)

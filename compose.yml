@@ -1,6 +1,6 @@
 services:
   algae:
-    image: tnraro/algae:latest
+    image: ghcr.io/tnraro/algae:main
     ports:
       - ${PORT:-41943}:41943
     volumes:
