@@ -99,62 +99,55 @@ func UpdateAlga(name string, compose string, env string) (string, *AlgaError) {
 	}
 	composeBackup := ""
 	if compose != "" {
-		before, err := read(name, "compose.yml")
+		before, err := writeFile(name, "compose.yml", compose)
 		if err != nil {
 			return "", err
 		}
 		composeBackup = before
-		if err := write(name, "compose.yml", compose); err != nil {
-			composeBackup = ""
-			return "", err
-		}
 	}
 	envBackup := ""
 	if env != "" {
-		before, err := read(name, ".env")
+		before, err := writeFile(name, ".env", compose)
 		if err != nil {
+			rollback(name, "compose.yml", composeBackup)
 			return "", err
 		}
 		envBackup = before
-		if err := write(name, ".env", env); err != nil {
-			envBackup = ""
-			if composeBackup != "" {
-				if err := write(name, "compose.yml", composeBackup); err != nil {
-					fmt.Println("failed to restore compose.yml", err)
-				}
-			}
-			return "", err
-		}
 	}
 	log1, err1 := config(name)
 	if err1 != nil {
-		if composeBackup != "" {
-			if err := write(name, "compose.yml", composeBackup); err != nil {
-				fmt.Println("failed to restore compose.yml", err)
-			}
-		}
-		if envBackup != "" {
-			if err := write(name, ".env", envBackup); err != nil {
-				fmt.Println("failed to restore .env", err)
-			}
-		}
+		rollback(name, "compose.yml", composeBackup)
+		rollback(name, ".env", envBackup)
 		return "", err1
 	}
 	log2, err2 := upAlgaWithPull(name)
 	if err2 != nil {
-		if composeBackup != "" {
-			if err := write(name, "compose.yml", composeBackup); err != nil {
-				fmt.Println("failed to restore compose.yml", err)
-			}
-		}
-		if envBackup != "" {
-			if err := write(name, ".env", envBackup); err != nil {
-				fmt.Println("failed to restore .env", err)
-			}
-		}
+		rollback(name, "compose.yml", composeBackup)
+		rollback(name, ".env", envBackup)
 		return "", err1
 	}
 	return log0 + log1 + log2, nil
+}
+func writeFile(name string, path string, content string) (string, *AlgaError) {
+	backup, err0 := read(name, path)
+	if err0 != nil {
+		return "", err0
+	}
+	err1 := write(name, path, content)
+	if err1 != nil {
+		return "", err1
+	}
+	return backup, nil
+}
+func rollback(name string, path string, content string) *AlgaError {
+	if content == "" {
+		return nil
+	}
+	if err := write(name, path, content); err != nil {
+		fmt.Println("failed to restore", path, err)
+		return err
+	}
+	return nil
 }
 func GetAlgae() ([]string, *AlgaError) {
 	files, err := os.ReadDir(util.DataDir("algae"))
