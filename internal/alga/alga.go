@@ -156,6 +156,18 @@ func UpdateAlga(name string, compose string, env string) (string, *AlgaError) {
 	}
 	return log0 + log1 + log2, nil
 }
+func GetAlgae() ([]string, *AlgaError) {
+	files, err := os.ReadDir(util.DataDir("algae"))
+	if err != nil {
+		return nil, Error(500, err.Error())
+	}
+
+	result := make([]string, len(files))
+	for i, f := range files {
+		result[i] = f.Name()
+	}
+	return result, nil
+}
 
 func run(name string, command string, args ...string) (string, *AlgaError) {
 	cmd := exec.Command(command, args...)

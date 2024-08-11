@@ -16,6 +16,7 @@ func SetupRouter() *gin.Engine {
 	patchAlga(r)
 	postLogin(r)
 	getAlga(r)
+	getAlgae(r)
 	return r
 }
 
@@ -95,6 +96,18 @@ func getAlga(r *gin.Engine) *gin.Engine {
 		})
 	})
 
+	return r
+}
+
+func getAlgae(r *gin.Engine) *gin.Engine {
+	r.GET("/algae", func(c *gin.Context) {
+		result, err := alga.GetAlgae()
+		if err != nil {
+			c.JSON(err.Code, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, result)
+	})
 	return r
 }
 
