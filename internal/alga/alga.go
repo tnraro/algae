@@ -107,7 +107,7 @@ func UpdateAlga(name string, compose string, env string) (string, *AlgaError) {
 	}
 	envBackup := ""
 	if env != "" {
-		before, err := writeFile(name, ".env", compose)
+		before, err := writeFile(name, ".env", env)
 		if err != nil {
 			rollback(name, "compose.yml", composeBackup)
 			return "", err
