@@ -86,6 +86,24 @@ func DeleteAlga(name string) (string, *AlgaError) {
 	}
 	return logs, nil
 }
+func UpdateAlgaConfig(name string, filename string, content string) (string, *AlgaError) {
+	if !CheckName(name) {
+		return "", Errorf(400, `The alga name "%s" does not match the pattern`, name)
+	}
+	if !hasAlga(name) {
+		return "", Errorf(404, "The alga \"%s\" not exists", name)
+	}
+	before, err := writeFile(name, filename, content)
+	if err != nil {
+		return "", err
+	}
+	if logs, err := config(name); err != nil {
+		rollback(name, filename, before)
+		return "", err
+	} else {
+		return logs, nil
+	}
+}
 func UpdateAlga(name string, compose string, env string) (string, *AlgaError) {
 	if !CheckName(name) {
 		return "", Errorf(400, `The alga name "%s" does not match the pattern`, name)

@@ -17,6 +17,7 @@ func SetupRouter() *gin.Engine {
 	postLogin(r)
 	getAlga(r)
 	getAlgae(r)
+	updateAlgaConfig(r)
 	return r
 }
 
@@ -76,6 +77,44 @@ func patchAlga(r *gin.Engine) *gin.Engine {
 			return
 		}
 		c.JSON(200, gin.H{"logs": result})
+	})
+	return r
+}
+
+func updateAlgaConfig(r *gin.Engine) *gin.Engine {
+	r.PUT("/algae/:name/compose", func(c *gin.Context) {
+		name := c.Param("name")
+		type Body struct {
+			Compose string `json:"compose"`
+		}
+		var body Body
+		if err := c.ShouldBindJSON(&body); err != nil || body.Compose == "" {
+			c.JSON(400, gin.H{"error": "Invalid request body"})
+			return
+		}
+		logs, err := alga.UpdateAlgaConfig(name, "compose.yml", body.Compose)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error(), "logs": logs})
+			return
+		}
+		c.JSON(200, gin.H{"logs": logs})
+	})
+	r.PUT("/algae/:name/env", func(c *gin.Context) {
+		name := c.Param("name")
+		type Body struct {
+			Env string `json:"env"`
+		}
+		var body Body
+		if err := c.ShouldBindJSON(&body); err != nil || body.Env == "" {
+			c.JSON(400, gin.H{"error": "Invalid request body"})
+			return
+		}
+		logs, err := alga.UpdateAlgaConfig(name, ".env", body.Env)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error(), "logs": logs})
+			return
+		}
+		c.JSON(200, gin.H{"logs": logs})
 	})
 	return r
 }

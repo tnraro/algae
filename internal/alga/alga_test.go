@@ -75,6 +75,33 @@ func TestAlga(t *testing.T) {
 		}
 	})
 
+	t.Run("update alga config", func(t *testing.T) {
+		t.Run("compose", func(t *testing.T) {
+			compose := "services:\n  app:\n    image: hello-world:latest\n    environment:\n    - FOO=${FOO:-foo}"
+			if _, err := UpdateAlgaConfig(name, "compose.yml", compose); err != nil {
+				t.Fatal(err)
+			}
+
+			if alga, err := GetAlga(name); err != nil {
+				t.Fatal(err)
+			} else {
+				util.AssertEq(t, alga.Compose, compose)
+			}
+		})
+		t.Run("env", func(t *testing.T) {
+			env := "FOO=bar"
+			if _, err := UpdateAlgaConfig(name, ".env", env); err != nil {
+				t.Fatal(err)
+			}
+
+			if alga, err := GetAlga(name); err != nil {
+				t.Fatal(err)
+			} else {
+				util.AssertEq(t, alga.Env, env)
+			}
+		})
+	})
+
 	t.Run("delete alga", func(t *testing.T) {
 		if _, err := DeleteAlga(name); err != nil {
 			t.Fatal(err)
