@@ -134,6 +134,28 @@ func getAlga(r *gin.Engine) *gin.Engine {
 			"env":     result.Env,
 		})
 	})
+	r.GET("/algae/:name/logs", func(c *gin.Context) {
+		name := c.Param("name")
+
+		result, err := alga.GetAlgaLogs(name)
+		if err != nil {
+			c.JSON(err.Code, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{
+			"logs": result,
+		})
+	})
+	r.GET("/algae/:name/logs/text", func(c *gin.Context) {
+		name := c.Param("name")
+
+		result, err := alga.GetAlgaLogs(name)
+		if err != nil {
+			c.String(err.Code, err.Error())
+			return
+		}
+		c.String(200, result)
+	})
 
 	return r
 }

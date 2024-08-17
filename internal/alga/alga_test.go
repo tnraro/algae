@@ -100,6 +100,17 @@ func TestAlga(t *testing.T) {
 				util.AssertEq(t, alga.Env, env)
 			}
 		})
+
+		t.Run("logs", func(t *testing.T) {
+			logs, err := GetAlgaLogs(name)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if logs == "" {
+				t.Fatal("logs should not be a empty string")
+			}
+		})
 	})
 
 	t.Run("delete alga", func(t *testing.T) {

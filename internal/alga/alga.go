@@ -179,6 +179,15 @@ func GetAlgae() ([]string, *AlgaError) {
 	}
 	return result, nil
 }
+func GetAlgaLogs(name string) (string, *AlgaError) {
+	if !CheckName(name) {
+		return "", Errorf(400, `The alga name "%s" does not match the pattern`, name)
+	}
+	if !hasAlga(name) {
+		return "", Errorf(404, "The alga \"%s\" not exists", name)
+	}
+	return getAlgaLogs(name)
+}
 
 func run(name string, command string, args ...string) (string, *AlgaError) {
 	cmd := exec.Command(command, args...)
@@ -223,6 +232,9 @@ func upAlgaWithPull(name string) (string, *AlgaError) {
 }
 func downAlga(name string) (string, *AlgaError) {
 	return run(name, "docker", "compose", "down", "--remove-orphans")
+}
+func getAlgaLogs(name string) (string, *AlgaError) {
+	return run(name, "docker", "compose", "logs", "--timestamps", "--no-color")
 }
 
 func write(name string, filename string, content string) *AlgaError {
