@@ -156,6 +156,16 @@ func getAlga(r *gin.Engine) *gin.Engine {
 		}
 		c.String(200, result)
 	})
+	r.GET("/algae/:name/ps/text", func(c *gin.Context) {
+		name := c.Param("name")
+
+		result, err := alga.GetAlgaContainers(name)
+		if err != nil {
+			c.String(err.Code, err.Error())
+			return
+		}
+		c.String(200, result)
+	})
 
 	return r
 }
@@ -168,6 +178,14 @@ func getAlgae(r *gin.Engine) *gin.Engine {
 			return
 		}
 		c.JSON(200, result)
+	})
+	r.GET("/ls", func(c *gin.Context) {
+		result, err := alga.ListAlgae()
+		if err != nil {
+			c.String(err.Code, err.Error())
+			return
+		}
+		c.String(200, result)
 	})
 	return r
 }

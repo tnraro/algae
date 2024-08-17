@@ -179,6 +179,18 @@ func GetAlgae() ([]string, *AlgaError) {
 	}
 	return result, nil
 }
+func ListAlgae() (string, *AlgaError) {
+	return listAlgae()
+}
+func GetAlgaContainers(name string) (string, *AlgaError) {
+	if !CheckName(name) {
+		return "", Errorf(400, `The alga name "%s" does not match the pattern`, name)
+	}
+	if !hasAlga(name) {
+		return "", Errorf(404, "The alga \"%s\" not exists", name)
+	}
+	return getAlgaContainers(name)
+}
 func GetAlgaLogs(name string) (string, *AlgaError) {
 	if !CheckName(name) {
 		return "", Errorf(400, `The alga name "%s" does not match the pattern`, name)
@@ -192,6 +204,26 @@ func GetAlgaLogs(name string) (string, *AlgaError) {
 func run(name string, command string, args ...string) (string, *AlgaError) {
 	cmd := exec.Command(command, args...)
 	cmd.Dir = AlgaDir(name)
+	result, err := cmd.Output()
+
+	if err != nil {
+		switch e := err.(type) {
+		case *exec.Error:
+			fmt.Println("failed executing:", args, err)
+			return "", Error(500, err.Error())
+		case *exec.ExitError:
+			fmt.Println("exit:", e.ExitCode(), string(e.Stderr))
+			return "", Error(500, string(e.Stderr))
+		default:
+			fmt.Println("unexpected error:", err)
+			return "", Error(500, err.Error())
+		}
+	}
+	return string(result), nil
+}
+
+func runAsGlobal(command string, args ...string) (string, *AlgaError) {
+	cmd := exec.Command(command, args...)
 	result, err := cmd.Output()
 
 	if err != nil {
@@ -236,6 +268,12 @@ func downAlga(name string) (string, *AlgaError) {
 func getAlgaLogs(name string) (string, *AlgaError) {
 	return run(name, "docker", "compose", "logs", "--timestamps", "--no-color")
 }
+func getAlgaContainers(name string) (string, *AlgaError) {
+	return run(name, "docker", "compose", "ps", "-a")
+}
+func listAlgae() (string, *AlgaError) (string, *AlgaError) {
+	return runAsGlobal("docker", "compose", "ls", "-a")
+}
 
 func write(name string, filename string, content string) *AlgaError {
 	err := os.WriteFile(AlgaDir(name, filename), []byte(content), 0755)
@@ -270,23 +308,7 @@ func clear(name string) *AlgaError {
 }
 
 func Login(registry string, username string, password string) (string, *AlgaError) {
-	cmd := exec.Command("docker", "login", registry, "-u", username, "-p", password)
-	result, err := cmd.Output()
-
-	if err != nil {
-		switch e := err.(type) {
-		case *exec.Error:
-			fmt.Println("failed executing:", err)
-			return "", Error(500, err.Error())
-		case *exec.ExitError:
-			fmt.Println("exit:", e.ExitCode(), string(e.Stderr))
-			return "", Error(500, string(e.Stderr))
-		default:
-			fmt.Println("unexpected error:", err)
-			return "", Error(500, err.Error())
-		}
-	}
-	return string(result), nil
+	return runAsGlobal("docker", "login", registry, "-u", username, "-p", password)
 }
 
 var (
