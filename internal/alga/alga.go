@@ -271,7 +271,7 @@ func getAlgaLogs(name string) (string, *AlgaError) {
 func getAlgaContainers(name string) (string, *AlgaError) {
 	return run(name, "docker", "compose", "ps", "-a")
 }
-func listAlgae() (string, *AlgaError) (string, *AlgaError) {
+func listAlgae() (string, *AlgaError) {
 	return runAsGlobal("docker", "compose", "ls", "-a")
 }
 
